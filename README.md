@@ -40,7 +40,7 @@ Each lab is a self-contained environment (DC + Client) focusing on a specific vu
 *   **Host OS**: Windows, macOS, or Linux (Scripts are PowerShell-based, tested on Windows).
 *   **Virtualization**: [VirtualBox 7.x](https://www.virtualbox.org/wiki/Downloads) + Extension Pack.
 *   **Orchestration**: [Vagrant 2.3+](https://www.vagrantup.com/downloads).
-*   **Resources**: Approx. 12GB RAM and 40GB Disk per active lab.
+*   **Resources**: Approx. 12GB RAM and just have enough storage for each active lab.
 
 ---
 
