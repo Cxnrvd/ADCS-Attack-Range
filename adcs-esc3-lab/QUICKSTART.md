@@ -1,12 +1,11 @@
 # ADCS ESC3 Lab - Quick Start Guide
 
-## 🚀 90-Second Setup
+## 🚀 Let's get started.
 
 ### 1. Start Domain Controller
 ```powershell
 cd E:\ADCS\adcs-esc3-lab
 vagrant up dc
-# Wait ~15 mins for AD DS installation and automatic reboot
 vagrant reload dc --provision
 ```
 
@@ -41,7 +40,7 @@ vagrant reload dc --provision
 ### 4. Start Client
 ```powershell
 vagrant up client
-# Auto-joins domain - wait ~15 mins
+
 ```
 
 ### 5. Verify

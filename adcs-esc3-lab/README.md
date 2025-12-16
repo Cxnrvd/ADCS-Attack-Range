@@ -384,9 +384,4 @@ Add-Computer -DomainName adcs.local -Credential `$cred -Force -Restart
 
 ---
 
-**Lab Version**: 1.0  
-**Created**: 2025-12-11  
-**Status**: Manual CA Workflow  
-**Automation**: 90% (Manual CA & Template Setup)
-
 🎓 **Ready for ESC3 vulnerability demonstration!**
