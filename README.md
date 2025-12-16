@@ -19,16 +19,16 @@ This project allows you to spin up isolated, reproducible environments for **ESC
 
 Each lab is a self-contained environment (DC + Client) focusing on a specific vulnerability class.
 
-| Lab | Vulnerability | Description | Technique |
-|:---:|:--------------|:------------|:----------|
-| **[ESC1](./adcs-esc1-lab)** | **Misconfigured Template** | Template allows `Client Authentication` + `Enrollee Supplies Subject`. | **Domain Escalation** |
-| **[ESC2](./adcs-esc2-lab)** | **Misconfigured Template** | Template allows `Any Purpose` OID (Code Signing etc.) for same-key certificate requests. | **Persistence / Evasion** |
-| **[ESC3](./adcs-esc3-lab)** | **Enrollment Agent** | Template allows request on behalf of other users (Enrollment Agent Abuse). | **Domain Escalation** |
-| **[ESC4](./adcs-esc4-lab)** | **Vulnerable ACL** | Low-privileged user has `Write` permissions on a Certificate Template object. | **Template Injection** |
-| **[ESC5](./adcs-esc5-lab)** | **PKI Object Control** | User has `GenericAll` rights on the CA Server, Templates Container, or other PKI objects. | **Infrastructure Compromise** |
-| **[ESC6](./adcs-esc6-lab)** | **SAN Injection** | CA has `EDITF_ATTRIBUTESUBJECTALTNAME2` flag enabled, trusting user-supplied SANs on ANY template. | **Domain Escalation** |
-| **[ESC7](./adcs-esc7-lab)** | **CA Access Control** | User has `ManageCA` or `ManageCertificates` rights on the Certification Authority itself. | **CA Reconfiguration** |
-| **[ESC8](./adcs-esc8-lab)** | **NTLM Relay** | AD CS Web Enrollment (HTTP) enabled without Extended Protection (EPA). | **Credential Theft** |
+| Lab | Vulnerability | Technique |
+|:---:|:--------------|:----------|
+| **[ESC1](./adcs-esc1-lab)** | Domain escalation via No Issuance Requirements + Enrollable Client Authentication/Smart Card Logon OID + `CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT` | **Domain Escalation** |
+| **[ESC2](./adcs-esc2-lab)** | Domain escalation via No Issuance Requirements + Enrollable `Any Purpose` EKU or `No EKU` | **Persistence / Evasion** |
+| **[ESC3](./adcs-esc3-lab)** | Domain escalation via No Issuance Requirements + `Certificate Request Agent` EKU + No enrollment agent restrictions | **Domain Escalation** |
+| **[ESC4](./adcs-esc4-lab)** | Domain escalation via misconfigured certificate template access control | **Template Injection** |
+| **[ESC5](./adcs-esc5-lab)** | Domain escalation via vulnerable PKI AD Object Access Control | **Infrastructure Compromise** |
+| **[ESC6](./adcs-esc6-lab)** | Domain escalation via `EDITF_ATTRIBUTESUBJECTALTNAME2` on CA + No Manager Approval + Enrollable Client Authentication | **Domain Escalation** |
+| **[ESC7](./adcs-esc7-lab)** | Vulnerable Certificate Authority Access Control | **CA Reconfiguration** |
+| **[ESC8](./adcs-esc8-lab)** | NTLM Relay to AD CS HTTP Endpoints | **Credential Theft** |
 
 ---
 
