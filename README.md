@@ -44,11 +44,10 @@ Each lab is a self-contained environment (DC + Client) focusing on a specific vu
 
 ---
 
----
-
 ## 🛠️ Challenges
 
 *   **Challenges I Faced**: You will come across some of the challenges I faced as I deployed these environments, maybe you can be able to pick a few lessons as you deploy yours at any one time.
+
 ---
 
 ## 🚀 Getting Started
