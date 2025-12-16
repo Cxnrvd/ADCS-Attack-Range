@@ -1,0 +1,153 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# ==============================================================================
+# ADCS ESC4 Lab - Vagrantfile
+# ==============================================================================
+# Picked from valid ESC3 configuration as requested
+# ==============================================================================
+
+# Lab paths
+LAB_BASE_PATH = "E:\\ADCS\\adcs-esc4-lab"
+SCRIPTS_PATH = File.join(LAB_BASE_PATH, "scripts")
+
+# Domain configuration
+DOMAIN_NAME = "adcs.local"
+DOMAIN_NETBIOS = "ADCS"
+
+# Network configuration
+DC_IP = "192.168.57.22"
+CLIENT_IP = "192.168.57.23"
+
+# Vagrant box names
+DC_BOX = "mayfly/windows_server2019"
+CLIENT_BOX = "mayfly/windows10"
+
+# VM resources
+DC_CPUS = 2
+DC_MEMORY = 8096
+CLIENT_CPUS = 2
+CLIENT_MEMORY = 8096
+
+# ==============================================================================
+# VAGRANT CONFIGURATION
+# ==============================================================================
+
+Vagrant.configure("2") do |config|
+  
+  # Global Settings
+  config.vm.box_check_update = false
+  
+  # Configure WinRM (Standard ESC2/3 config)
+  config.vm.communicator = "winrm"
+  config.winrm.username = "vagrant"
+  config.winrm.password = "vagrant"
+  config.winrm.transport = :plaintext
+  config.winrm.basic_auth_only = true
+  config.winrm.retry_limit = 40
+  config.winrm.retry_delay = 10
+  config.winrm.timeout = 3600
+  
+  # SSH fallback
+  config.ssh.username = "vagrant"
+  config.ssh.password = "vagrant"
+  config.ssh.insert_key = false
+  
+  # Boot timeout
+  config.vm.boot_timeout = 1200
+  config.vm.graceful_halt_timeout = 120
+  
+  # ===========================================================================
+  # DC - Domain Controller
+  # ===========================================================================
+  
+  config.vm.define "dc", primary: true do |dc|
+    dc.vm.box = DC_BOX
+    dc.vm.hostname = "ESC4-DC"
+    
+    # Network - static IP on host-only
+    dc.vm.network "private_network", 
+                  ip: DC_IP,
+                  netmask: "255.255.255.0",
+                  auto_config: true
+    
+    # VirtualBox settings
+    dc.vm.provider "virtualbox" do |vb|
+      vb.name = "ADCS-ESC4-DC"
+      vb.gui = false
+      vb.cpus = DC_CPUS
+      vb.memory = DC_MEMORY
+      
+      # Standard optimizations
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--usbehci", "off"]
+      vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+      vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+      vb.customize ["modifyvm", :id, "--drag-and-drop", "bidirectional"]
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "minimal"]
+      vb.customize ["modifyvm", :id, "--vram", "32"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+    
+    # Provisioning (Standard Shell) - Reboot enabled for AD DS
+    dc.vm.provision "shell", path: "#{SCRIPTS_PATH}/dc-setup.ps1", reboot: true,
+                    env: {
+                      "DC_IP" => DC_IP,
+                      "DOMAIN_NAME" => DOMAIN_NAME,
+                      "DOMAIN_NETBIOS" => DOMAIN_NETBIOS
+                    }
+                    
+    # User Creation (Automated) - Run after reboot
+    dc.vm.provision "shell", path: "#{SCRIPTS_PATH}/add-users.ps1"
+  end
+  
+ # ===========================================================================
+# CLIENT VM
+# ===========================================================================
+
+config.vm.define "client", autostart: false do |client|
+  client.vm.box = CLIENT_BOX
+  # client.vm.hostname = "ESC4-CLIENT"
+
+  # WinRM explicit wait and retry
+  client.vm.boot_timeout = 1800
+  client.winrm.retry_limit = 60
+  client.winrm.retry_delay = 10
+  client.winrm.timeout = 3600
+
+  # Host-only network with DNS pointing to DC
+  client.vm.network "private_network",
+                    ip: CLIENT_IP,
+                    netmask: "255.255.255.0",
+                    auto_config: true,
+                    dns: DC_IP
+
+  # VirtualBox configuration
+  client.vm.provider "virtualbox" do |vb|
+    vb.name = "ADCS-ESC4-CLIENT"
+    vb.gui = false
+    vb.cpus = CLIENT_CPUS
+    vb.memory = CLIENT_MEMORY
+    
+    vb.customize ["modifyvm", :id, "--audio", "none"]
+    vb.customize ["modifyvm", :id, "--usb", "off"]
+    vb.customize ["modifyvm", :id, "--usbehci", "off"]
+    vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+    vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+    vb.customize ["modifyvm", :id, "--drag-and-drop", "bidirectional"]
+    vb.customize ["modifyvm", :id, "--paravirtprovider", "minimal"]
+    vb.customize ["modifyvm", :id, "--vram", "32"]
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
+  end
+
+  # Provisioning script
+client.vm.provision "shell", path: "#{SCRIPTS_PATH}/client_provisioning.ps1",
+                      env: {
+                        "DC_IP" => DC_IP,
+                        "CLIENT_IP" => CLIENT_IP,
+                        "DOMAIN_NAME" => DOMAIN_NAME,
+                        "DOMAIN_NETBIOS" => DOMAIN_NETBIOS
+                      }
+end
+end   

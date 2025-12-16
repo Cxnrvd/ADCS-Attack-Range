@@ -1,2 +1,95 @@
-# ADCS-Attack-Range
-A modular, fully automated Active Directory Certificate Services (AD CS) attack range. Deploys isolated ESC1-ESC8 lab environments via Vagrant and VirtualBox for researching and practicing PKI exploitation techniques.
+# ADCS Attack Range
+
+[![Vagrant](https://img.shields.io/badge/Vagrant-2.3%2B-blue.svg)](https://www.vagrantup.com/)
+[![VirtualBox](https://img.shields.io/badge/VirtualBox-7.x-orange.svg)](https://www.virtualbox.org/)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1-blue.svg)](https://docs.microsoft.com/en-us/powershell/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+A fully automated, modular experimentation lab for **Active Directory Certificate Services (AD CS)** vulnerabilities.
+This project allows you to spin up isolated, reproducible environments for **ESC1 through ESC8** attacks using Vagrant and VirtualBox.
+
+> **⚠️ WARNING**: These labs contain intentionally vulnerable configurations. **DO NOT** deploy this on a public network or production environment.
+
+---
+
+## 🎯 Labs Available
+
+Each lab is a self-contained environment (DC + Client) focusing on a specific vulnerability class.
+
+| Lab | Vulnerability | Description | Technique |
+|:---:|:--------------|:------------|:----------|
+| **[ESC1](./adcs-esc1-lab)** | **Misconfigured Template** | Template allows `Client Authentication` + `Enrollee Supplies Subject`. | **Domain Escalation** |
+| **[ESC2](./adcs-esc2-lab)** | **Misconfigured Template** | Template allows `Any Purpose` OID (Code Signing etc.) for same-key certificate requests. | **Persistence / Evasion** |
+| **[ESC3](./adcs-esc3-lab)** | **Enrollment Agent** | Template allows request on behalf of other users (Enrollment Agent Abuse). | **Domain Escalation** |
+| **[ESC4](./adcs-esc4-lab)** | **Vulnerable ACL** | Low-privileged user has `Write` permissions on a Certificate Template object. | **Template Injection** |
+| **[ESC5](./adcs-esc5-lab)** | **PKI Object Control** | User has `GenericAll` rights on the CA Server, Templates Container, or other PKI objects. | **Infrastructure Compromise** |
+| **[ESC6](./adcs-esc6-lab)** | **SAN Injection** | CA has `EDITF_ATTRIBUTESUBJECTALTNAME2` flag enabled, trusting user-supplied SANs on ANY template. | **Domain Escalation** |
+| **[ESC7](./adcs-esc7-lab)** | **CA Access Control** | User has `ManageCA` or `ManageCertificates` rights on the Certification Authority itself. | **CA Reconfiguration** |
+| **[ESC8](./adcs-esc8-lab)** | **NTLM Relay** | AD CS Web Enrollment (HTTP) enabled without Extended Protection (EPA). | **Credential Theft** |
+
+---
+
+## 🛠️ Prerequisites
+
+*   **Host OS**: Windows, macOS, or Linux (Scripts are PowerShell-based, tested on Windows).
+*   **Virtualization**: [VirtualBox 7.x](https://www.virtualbox.org/wiki/Downloads) + Extension Pack.
+*   **Orchestration**: [Vagrant 2.3+](https://www.vagrantup.com/downloads).
+*   **Resources**: Approx. 12GB RAM and 40GB Disk per active lab.
+
+---
+
+## 🚀 Getting Started
+
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/YourUsername/ADCS-Attack-Range.git
+    cd ADCS-Attack-Range
+    ```
+
+2.  **Choose a Lab**:
+    Navigate to the directory of the vulnerability you want to study.
+    ```powershell
+    cd adcs-esc1-lab
+    ```
+
+3.  **Deploy**:
+    Run Vagrant to build the Domain Controller and Client.
+    ```powershell
+    vagrant up
+    ```
+    *Provisioning typically takes 10-15 minutes.*
+
+4.  **Attack**:
+    Follow the `README.md` inside each lab folder for specific attack walkthroughs.
+
+5.  **Destroy**:
+    When finished, save resources by destroying the lab.
+    ```powershell
+    vagrant destroy -f
+    ```
+
+---
+
+## 🏗️ Architecture
+
+All labs follow a consistent "Split-Provisioning" architecture for stability:
+
+*   **Domain**: `adcs.local`
+*   **Network**: 192.168.57.0/24 (Host-Only / Private)
+*   **Base Box**: `mayfly/windows_server2019` & `mayfly/windows10`
+*   **Credentials**:
+    *   **Admin**: `Administrator` / `P@ssw0rd!123`
+    *   **User**: `johndoe` / `Summer2024!`
+
+---
+
+## 📚 References
+
+*   **Certified Pre-Owned**: [SpecterOps Whitepaper](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
+*   **Certify**: [GhostPack/Certify](https://github.com/GhostPack/Certify)
+*   **PetitPotam**: [topotam/PetitPotam](https://github.com/topotam/PetitPotam)
+*   **ADCShunter**: [GarrettFoster13/ADCShunter](https://github.com/GarrettFoster13/ADCShunter)
+
+---
+
+**Disclaimer**: This project is for educational purposes and authorized testing only. The author is not responsible for any misuse.

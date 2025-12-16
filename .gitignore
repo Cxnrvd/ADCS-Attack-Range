@@ -1,0 +1,30 @@
+# Vagrant
+.vagrant/
+*.box
+*.vbox
+vm_id
+
+# VirtualBox
+*.vdi
+*.vmdk
+*.vhd
+*.vhdx
+
+# Logs
+*.log
+logs/
+*.txt
+
+# PowerShell
+*.psd1
+*.psm1
+!scripts/*.ps1
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary
+tmp/
+*.tmp
