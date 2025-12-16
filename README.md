@@ -8,10 +8,13 @@
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1-blue.svg)](https://docs.microsoft.com/en-us/powershell/)
 
 
-A fully automated, modular experimentation lab for **Active Directory Certificate Services (AD CS)** vulnerabilities.
+A modular experimentation lab for **Active Directory Certificate Services (AD CS)** vulnerabilities.
 This project allows you to spin up isolated, reproducible environments for **ESC1 through ESC8** attacks using Vagrant and VirtualBox.
 
 > **⚠️ WARNING**: These labs contain intentionally vulnerable configurations. **DO NOT** deploy this on a public network or production environment.
+
+> **💡 DESIGN PHILOSOPHY**: **Automated Infrastructure, Manual Vulnerability**.
+> While the heavy lifting of deploying AD, DNS... is fully automated, many specific misconfigurations (like enabling vulnerable templates or weak ACLs) are designed as **manual steps**. This ensures you understand exactly *how* the vulnerability is created, rather than just exploiting a black box.
 
 ---
 
@@ -45,7 +48,7 @@ Each lab is a self-contained environment (DC + Client) focusing on a specific vu
 
 1.  **Clone the Repository**:
     ```bash
-    git clone https://github.com/YourUsername/ADCS-Attack-Range.git
+    git clone https://github.com/Cxnrvd/ADCS-Attack-Range
     cd ADCS-Attack-Range
     ```
 
