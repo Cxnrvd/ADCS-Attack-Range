@@ -292,5 +292,4 @@ vagrant powershell dc -c @"...[PowerShell script]..."@
 # 4. Provision client
 vagrant up client01
 
-# Done! Total time: 30-40 minutes
 ```

@@ -99,11 +99,4 @@ This guide covers the manual steps to install the **Certificate Authority (CA)**
 3.  **Verify**:
     - You should see `ESC2User` in the list of Certificate Templates in the CA console.
 
----
 
-## Next Steps
-
-Once you have completed these steps manually:
-1.  Close the VirtualBox console (optional).
-2.  Tell me you are done.
-3.  I will proceed to provision **CLIENT01** automatically.
