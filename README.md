@@ -6,7 +6,7 @@
 [![Vagrant](https://img.shields.io/badge/Vagrant-2.3%2B-blue.svg)](https://www.vagrantup.com/)
 [![VirtualBox](https://img.shields.io/badge/VirtualBox-7.x-orange.svg)](https://www.virtualbox.org/)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1-blue.svg)](https://docs.microsoft.com/en-us/powershell/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 
 A fully automated, modular experimentation lab for **Active Directory Certificate Services (AD CS)** vulnerabilities.
 This project allows you to spin up isolated, reproducible environments for **ESC1 through ESC8** attacks using Vagrant and VirtualBox.
@@ -89,9 +89,6 @@ All labs follow a consistent "Split-Provisioning" architecture for stability:
 ## 📚 References
 
 *   **Certified Pre-Owned**: [SpecterOps Whitepaper](https://specterops.io/wp-content/uploads/sites/3/2022/06/Certified_Pre-Owned.pdf)
-*   **Certify**: [GhostPack/Certify](https://github.com/GhostPack/Certify)
-*   **PetitPotam**: [topotam/PetitPotam](https://github.com/topotam/PetitPotam)
-*   **ADCShunter**: [GarrettFoster13/ADCShunter](https://github.com/GarrettFoster13/ADCShunter)
 
 ---
 
