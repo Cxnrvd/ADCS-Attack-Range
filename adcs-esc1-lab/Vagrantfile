@@ -1,0 +1,234 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# ==============================================================================
+# ADCS ESC1 Lab - Vagrantfile
+# ==============================================================================
+# 
+# Purpose: Educational lab demonstrating ESC1-style AD CS certificate 
+#          template abuse in an isolated environment.
+#
+# WARNING: This lab creates intentionally vulnerable configurations!
+#          Use ONLY in isolated environments with no external network access.
+#
+# Platform: VirtualBox provider only
+# Network: Static IPs on host-only network (no DHCP)
+# VMs: 
+#   - DC (Windows Server 2019) - Domain Controller with AD CS
+#   - CLIENT01 (Windows 10) - Domain-joined workstation
+#
+# ==============================================================================
+
+# ==============================================================================
+# CONFIGURATION VARIABLES
+# ==============================================================================
+
+# Lab paths (adjust if needed)
+LAB_BASE_PATH = "E:\\ADCS\\adcs-esc1-lab"
+PROVISION_PATH = File.join(LAB_BASE_PATH, "provision")
+
+# Domain configuration
+DOMAIN_NAME = "adcs.local"
+DOMAIN_NETBIOS = "ADCS"
+
+# Network configuration
+NETWORK_PREFIX = "192.168.57"
+DC_IP = "#{NETWORK_PREFIX}.10"
+CLIENT_IP = "#{NETWORK_PREFIX}.11"
+
+# Vagrant box names (exact names as specified)
+DC_BOX = "StefanScherer/windows_2019"
+CLIENT_BOX = "mayfly/windows10"
+
+# VM resources (per-VM configuration)
+DC_CPUS = 1
+DC_MEMORY = 8096  # 8GB RAM
+CLIENT_CPUS = 2
+CLIENT_MEMORY = 8096  # 8GB RAM
+
+# ==============================================================================
+# VAGRANT CONFIGURATION
+# ==============================================================================
+
+Vagrant.configure("2") do |config|
+  
+  # ---------------------------------------------------------------------------
+  # Global Settings
+  # ---------------------------------------------------------------------------
+  
+  # Disable automatic box update checking
+  config.vm.box_check_update = false
+  
+  # Configure WinRM for Windows guests (primary)
+  config.vm.communicator = "winrm"
+  config.winrm.username = "vagrant"
+  config.winrm.password = "vagrant"
+  config.winrm.transport = :plaintext
+  config.winrm.basic_auth_only = true
+  config.winrm.retry_limit = 30
+  config.winrm.retry_delay = 10
+  config.winrm.timeout = 1800  # 30 minutes for DC promotion
+  
+  # SSH fallback configuration (for when WinRM fails during reboots)
+  config.ssh.username = "vagrant"
+  config.ssh.password = "vagrant"
+  config.ssh.insert_key = false
+  
+  # Increase timeout for Windows boot and DC promotion reboots
+  config.vm.boot_timeout = 1200  # 20 minutes
+  config.vm.graceful_halt_timeout = 120
+  
+  # ===========================================================================
+  # DC - Domain Controller (Windows Server 2019)
+  # ===========================================================================
+  
+  config.vm.define "dc", primary: true do |dc|
+    
+    # Box configuration
+    dc.vm.box = DC_BOX
+    dc.vm.hostname = "DC"
+    
+    # Network configuration - static IP on host-only network
+    dc.vm.network "private_network", 
+                  ip: DC_IP,
+                  netmask: "255.255.255.0",
+                  auto_config: true
+    
+    # VirtualBox provider settings
+    dc.vm.provider "virtualbox" do |vb|
+      vb.name = "ADCS-ESC1-DC"
+      vb.gui = false
+      vb.cpus = DC_CPUS
+      vb.memory = DC_MEMORY
+      
+      # Performance optimizations for lab environment
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--usbehci", "off"]
+      vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+      # vb.customize ["modifyvm", :id, "--accelerate2dvideo", "off"]
+      vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+      vb.customize ["modifyvm", :id, "--drag-and-drop", "bidirectional"]
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "minimal"]
+      vb.customize ["modifyvm", :id, "--vram", "32"]
+      
+      # I/O APIC required for multi-CPU (even though we use 1 CPU, good practice)
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+    
+    
+    # Upload helpers.ps1 first
+    dc.vm.provision "file",
+                    source: File.join(PROVISION_PATH, "helpers.ps1"),
+                    destination: "C:\\provision\\helpers.ps1"
+    
+    # Provisioning script
+    dc.vm.provision "shell", 
+                    privileged: true,
+                    path: File.join(PROVISION_PATH, "dc_provision.ps1"),
+                    powershell_elevated_interactive: false
+    
+    # Synced folder (disabled for security)
+    dc.vm.synced_folder ".", "/vagrant", disabled: true
+  end
+  
+  # ===========================================================================
+  # CLIENT01 - Windows 10 Workstation
+  # ===========================================================================
+  
+  config.vm.define "client01", autostart: true do |client|
+    
+    # Box configuration
+    client.vm.box = CLIENT_BOX
+    client.vm.hostname = "CLIENT01"
+    
+    # Network configuration - static IP on host-only network
+    client.vm.network "private_network", 
+                      ip: CLIENT_IP,
+                      netmask: "255.255.255.0",
+                      auto_config: true
+    
+    # VirtualBox provider settings
+    client.vm.provider "virtualbox" do |vb|
+      vb.name = "ADCS-ESC1-CLIENT01"
+      vb.gui = false
+      vb.cpus = CLIENT_CPUS
+      vb.memory = CLIENT_MEMORY
+      
+      # Performance optimizations for lab environment
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+      vb.customize ["modifyvm", :id, "--usbehci", "off"]
+      vb.customize ["modifyvm", :id, "--accelerate3d", "off"]
+      # Deprecated in VirtualBox 7.x
+      # vb.customize ["modifyvm", :id, "--accelerate2dvideo", "off"]
+      vb.customize ["modifyvm", :id, "--clipboard-mode", "disabled"]
+      vb.customize ["modifyvm", :id, "--drag-and-drop", "disabled"]
+      vb.customize ["modifyvm", :id, "--paravirtprovider", "minimal"]
+      vb.customize ["modifyvm", :id, "--vram", "32"]
+      
+      # I/O APIC
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+    
+    
+    # Upload helpers.ps1 first
+    client.vm.provision "file",
+                        source: File.join(PROVISION_PATH, "helpers.ps1"),
+                        destination: "C:\\provision\\helpers.ps1"
+    
+    # Provisioning script (runs after DC is up)
+    client.vm.provision "shell", 
+                        privileged: true,
+                        path: File.join(PROVISION_PATH, "client_provision.ps1"),
+                        powershell_elevated_interactive: false
+    
+    # Synced folder (disabled for security)
+    client.vm.synced_folder ".", "/vagrant", disabled: true
+  end
+  
+end
+
+# ==============================================================================
+# USAGE NOTES
+# ==============================================================================
+#
+# Quick Start:
+#   cd E:\ADCS\adcs-esc1-lab
+#   vagrant up --provider=virtualbox
+#
+# Start individual VMs:
+#   vagrant up dc
+#   vagrant up client01
+#
+# SSH into VMs:
+#   vagrant ssh dc
+#   vagrant ssh client01
+#
+# Re-provision (without destroying):
+#   vagrant provision dc
+#   vagrant provision client01
+#
+# Skip provisioning on boot:
+#   vagrant up --no-provision
+#
+# Snapshot before testing:
+#   vagrant snapshot save dc dc_clean
+#   vagrant snapshot restore dc dc_clean
+#
+# Cleanup:
+#   vagrant destroy -f
+#
+# ==============================================================================
+# SECURITY WARNINGS
+# ==============================================================================
+#
+# ⚠️  This lab creates INTENTIONALLY VULNERABLE configurations!
+#
+# - ESC1User certificate template allows privilege escalation
+# - Network is isolated (host-only) with no external routing
+# - NEVER connect this lab to production networks
+# - NEVER use these configurations in real environments
+# - Use snapshots before testing exploitation
+#
+# ==============================================================================
